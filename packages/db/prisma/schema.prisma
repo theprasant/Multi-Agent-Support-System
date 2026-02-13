@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  IN_TRANSIT
+  DELIVERED
+  CANCELED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  CANCELED
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+}
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+enum AgentType {
+  SUPPORT
+  ORDER
+  BILLING
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  product   Product     @relation(fields: [productId], references: [id])
+  productId Int
+  createdAt DateTime    @default(now())
+  status    OrderStatus @default(PENDING)
+  user      User?       @relation(fields: [userId], references: [id])
+  userId    Int?
+  invoices  Invoice[]
+}
+
+model Product {
+  id     Int     @id @default(autoincrement())
+  name   String
+  price  Decimal  @db.Decimal(10, 2)
+  orders Order[]
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  name          String?
+  orders        Order[]
+  subscriptions Subscription[]
+}
+
+model Invoice {
+  id        Int           @id @default(autoincrement())
+  order     Order         @relation(fields: [orderId], references: [id])
+  orderId   Int
+  createdAt DateTime      @default(now())
+  amount    Decimal       @db.Decimal(10, 2)
+  status    InvoiceStatus @default(PENDING)
+  refunds   Refund[]
+}
+
+model Refund {
+  id        Int     @id @default(autoincrement())
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+  invoiceId Int
+
+  amount Decimal  @db.Decimal(10, 2)
+  reason String?
+
+  status RefundStatus @default(PENDING)
+
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+}
+
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  status    SubscriptionStatus @default(ACTIVE)
+  price    Decimal  @db.Decimal(10, 2)
+}
+
+
+model Conversation {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  messages  Message[]
+  agent     AgentType     @default(SUPPORT)
+}
+
+model Message {
+  id             Int       @id @default(autoincrement())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId Int
+
+  role    MessageRole
+  content String
+
+  createdAt DateTime @default(now())
+}

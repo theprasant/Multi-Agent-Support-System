@@ -1,0 +1,29 @@
+{
+  "name": "@repo/db",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/client.ts",
+  "types": "./src/client.ts",
+  "exports": {
+    ".": "./src/client.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.0",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0"
+  },
+  "devDependencies": {
+    "dotenv": "^17.2.4",
+    "prisma": "^7.3.0",
+    "tsx": "^4.21.0"
+  }
+}
